@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- NFC -->
+	<key>NFCReaderUsageDescription</key>
+	<string>Brick uses NFC to detect when you tap your phone against the Brick device to lock or unlock apps.</string>
+
+	<!-- URL Scheme for NFC background tag reading -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>brick</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.soapyheas.Brick</string>
+		</dict>
+	</array>
+
+	<!-- Declare support for NDEF tag reading -->
+	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+	<array>
+		<string>D2760000850101</string>
+	</array>
+</dict>
+</plist>
