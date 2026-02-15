@@ -1,4 +1,4 @@
-# Brick — DIY App Blocker
+# TouchGrass — DIY App Blocker
 
 A personal-use iOS app that blocks distracting apps when you tap your phone against an NFC tag. Tap again to unblock.
 
@@ -26,17 +26,17 @@ This is a personal learning project. It is not affiliated with, endorsed by, or 
 
 ## Programming Your NFC Tag
 
-1. In the app, tap the gear icon and select "Program NFC Tag"
+1. In the app, tap the sparkle icon and select "Program NFC Tag"
 2. Hold a blank NTAG215/216 near the top of your iPhone
-3. The app writes `brick://toggle` to the tag
-4. Done — this tag is now your Brick
+3. The app writes `touchgrass://toggle` to the tag
+4. Done — this tag is now your TouchGrass
 
 ## How It Works
 
-1. Tap your phone on the Brick (NFC tag)
-2. iPhone reads `brick://toggle` and opens the app
+1. Tap your phone on the NFC tag
+2. iPhone reads `touchgrass://toggle` and opens the app
 3. The app toggles the lock state
 4. When locked, selected apps are shielded via Apple's Screen Time API (ManagedSettings)
-5. Tap the Brick again to unlock
+5. Tap the tag again to unlock
 
-You get 5 emergency unbricks if you don't have access to your Brick. Once they're used, the only way to unlock is the physical tap.
+You get 3 emergency unlocks if you don't have access to your tag. Once they're used, the only way to unlock is the physical tap.

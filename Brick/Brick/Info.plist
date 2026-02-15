@@ -4,7 +4,7 @@
 <dict>
 	<!-- NFC -->
 	<key>NFCReaderUsageDescription</key>
-	<string>Brick uses NFC to detect when you tap your phone against the Brick device to lock or unlock apps.</string>
+	<string>TouchGrass uses NFC to detect when you tap your phone against the tag to lock or unlock apps.</string>
 
 	<!-- URL Scheme for NFC background tag reading -->
 	<key>CFBundleURLTypes</key>
@@ -12,10 +12,10 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>brick</string>
+				<string>touchgrass</string>
 			</array>
 			<key>CFBundleURLName</key>
-			<string>com.soapyheas.Brick</string>
+			<string>com.soapyheas.TouchGrass</string>
 		</dict>
 	</array>
 

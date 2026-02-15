@@ -9,7 +9,7 @@ import CoreNFC
 
 class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
     static let shared = NFCManager()
-    static let brickURL = URL(string: "brick://toggle")!
+    static let tagURL = URL(string: "touchgrass://toggle")!
 
     @Published var lastScanDate: Date?
     @Published var isScanning = false
@@ -25,12 +25,12 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
         guard NFCNDEFReaderSession.readingAvailable else { return }
         self.onTagRead = onRead
         session = NFCNDEFReaderSession(delegate: self, queue: .main, invalidateAfterFirstRead: true)
-        session?.alertMessage = "Hold your iPhone near the Brick"
+        session?.alertMessage = "Hold your iPhone near the tag"
         session?.begin()
         isScanning = true
     }
 
-    func programBrick(completion: @escaping (Bool) -> Void) {
+    func programTag(completion: @escaping (Bool) -> Void) {
         guard NFCNDEFReaderSession.readingAvailable else {
             completion(false)
             return
@@ -52,7 +52,7 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
     func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
         for message in messages {
             for record in message.records {
-                if let url = record.wellKnownTypeURIPayload(), url.scheme == "brick" {
+                if let url = record.wellKnownTypeURIPayload(), url.scheme == "touchgrass" {
                     DispatchQueue.main.async {
                         self.lastScanDate = Date()
                         self.onTagRead?()
@@ -62,7 +62,7 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
                 }
             }
         }
-        session.invalidate(errorMessage: "Not a valid Brick tag.")
+        session.invalidate(errorMessage: "Not a valid TouchGrass tag.")
     }
 
     func readerSession(_ session: NFCNDEFReaderSession, didDetect tags: [NFCNDEFTag]) {
@@ -90,17 +90,17 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
                 return
             }
             for record in message.records {
-                if let url = record.wellKnownTypeURIPayload(), url.scheme == "brick" {
+                if let url = record.wellKnownTypeURIPayload(), url.scheme == "touchgrass" {
                     DispatchQueue.main.async {
                         self.lastScanDate = Date()
                         self.onTagRead?()
                     }
-                    session.alertMessage = "Brick detected!"
+                    session.alertMessage = "TouchGrass detected!"
                     session.invalidate()
                     return
                 }
             }
-            session.invalidate(errorMessage: "Not a valid Brick tag.")
+            session.invalidate(errorMessage: "Not a valid TouchGrass tag.")
         }
     }
 
@@ -111,14 +111,14 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
                 self.writeCompletion?(false)
                 return
             }
-            let uriPayload = NFCNDEFPayload.wellKnownTypeURIPayload(url: NFCManager.brickURL)!
+            let uriPayload = NFCNDEFPayload.wellKnownTypeURIPayload(url: NFCManager.tagURL)!
             let message = NFCNDEFMessage(records: [uriPayload])
             tag.writeNDEF(message) { error in
                 if let error = error {
                     session.invalidate(errorMessage: "Write failed: \(error.localizedDescription)")
                     self.writeCompletion?(false)
                 } else {
-                    session.alertMessage = "Brick programmed!"
+                    session.alertMessage = "Tag programmed!"
                     session.invalidate()
                     self.writeCompletion?(true)
                 }
@@ -132,13 +132,13 @@ class NFCManager: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
 
 class NFCManager: ObservableObject {
     static let shared = NFCManager()
-    static let brickURL = URL(string: "brick://toggle")!
+    static let tagURL = URL(string: "touchgrass://toggle")!
 
     @Published var lastScanDate: Date?
     @Published var isScanning = false
 
     func scan(onRead: @escaping () -> Void) {}
-    func programBrick(completion: @escaping (Bool) -> Void) { completion(false) }
+    func programTag(completion: @escaping (Bool) -> Void) { completion(false) }
 }
 
 #endif

@@ -2,15 +2,15 @@ import SwiftUI
 import FamilyControls
 
 @main
-struct BrickApp: App {
+struct TouchGrassApp: App {
     @StateObject private var screenTimeManager = ScreenTimeManager.shared
-    @StateObject private var brickState = BrickState.shared
+    @StateObject private var appState = TouchGrassState.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(screenTimeManager)
-                .environmentObject(brickState)
+                .environmentObject(appState)
                 .onOpenURL { url in
                     handleURL(url)
                 }
@@ -20,7 +20,7 @@ struct BrickApp: App {
     private func handleURL(_ url: URL) {
         guard url.host == "toggle" || url.path.contains("toggle") else { return }
         Task {
-            await brickState.toggle(using: screenTimeManager)
+            await appState.toggle(using: screenTimeManager)
         }
     }
 }

@@ -1,31 +1,31 @@
 import Foundation
 import Combine
 
-class BrickState: ObservableObject {
-    static let shared = BrickState()
-    static let maxEmergencyUnbricks = 5
+class TouchGrassState: ObservableObject {
+    static let shared = TouchGrassState()
+    static let maxEmergencyUnlocks = 3
 
     @Published var isLocked: Bool {
         didSet {
-            UserDefaults.standard.set(isLocked, forKey: "brickIsLocked")
+            UserDefaults.standard.set(isLocked, forKey: "touchgrassIsLocked")
             lockTimestamp = isLocked ? Date() : nil
         }
     }
     @Published var lockTimestamp: Date?
-    @Published var emergencyUnbricksRemaining: Int {
+    @Published var emergencyUnlocksRemaining: Int {
         didSet {
-            UserDefaults.standard.set(emergencyUnbricksRemaining, forKey: "emergencyUnbricksRemaining")
+            UserDefaults.standard.set(emergencyUnlocksRemaining, forKey: "emergencyUnlocksRemaining")
         }
     }
 
     init() {
-        self.isLocked = UserDefaults.standard.bool(forKey: "brickIsLocked")
+        self.isLocked = UserDefaults.standard.bool(forKey: "touchgrassIsLocked")
 
-        let stored = UserDefaults.standard.integer(forKey: "emergencyUnbricksRemaining")
-        if UserDefaults.standard.object(forKey: "emergencyUnbricksRemaining") == nil {
-            self.emergencyUnbricksRemaining = BrickState.maxEmergencyUnbricks
+        let stored = UserDefaults.standard.integer(forKey: "emergencyUnlocksRemaining")
+        if UserDefaults.standard.object(forKey: "emergencyUnlocksRemaining") == nil {
+            self.emergencyUnlocksRemaining = TouchGrassState.maxEmergencyUnlocks
         } else {
-            self.emergencyUnbricksRemaining = stored
+            self.emergencyUnlocksRemaining = stored
         }
 
         if isLocked {
@@ -59,16 +59,16 @@ class BrickState: ObservableObject {
     }
 
     @MainActor
-    func emergencyUnbrick(using screenTime: ScreenTimeManager) -> Bool {
+    func emergencyUnlock(using screenTime: ScreenTimeManager) -> Bool {
         guard isLocked else { return false }
-        guard emergencyUnbricksRemaining > 0 else { return false }
-        emergencyUnbricksRemaining -= 1
+        guard emergencyUnlocksRemaining > 0 else { return false }
+        emergencyUnlocksRemaining -= 1
         screenTime.unblockApps()
         isLocked = false
         return true
     }
 
-    func resetEmergencyUnbricks() {
-        emergencyUnbricksRemaining = BrickState.maxEmergencyUnbricks
+    func resetEmergencyUnlocks() {
+        emergencyUnlocksRemaining = TouchGrassState.maxEmergencyUnlocks
     }
 }

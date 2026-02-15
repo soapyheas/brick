@@ -19,7 +19,7 @@
                BlueprintIdentifier = "B346C41C2F41873600E88F95"
                BuildableName = "ShieldAction.appex"
                BlueprintName = "ShieldAction"
-               ReferencedContainer = "container:Brick.xcodeproj">
+               ReferencedContainer = "container:TouchGrass.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,9 +31,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B346C3DD2F41851A00E88F95"
-               BuildableName = "Brick.app"
-               BlueprintName = "Brick"
-               ReferencedContainer = "container:Brick.xcodeproj">
+               BuildableName = "TouchGrass.app"
+               BlueprintName = "TouchGrass"
+               ReferencedContainer = "container:TouchGrass.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B346C3DD2F41851A00E88F95"
-            BuildableName = "Brick.app"
-            BlueprintName = "Brick"
-            ReferencedContainer = "container:Brick.xcodeproj">
+            BuildableName = "TouchGrass.app"
+            BlueprintName = "TouchGrass"
+            ReferencedContainer = "container:TouchGrass.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -81,9 +81,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B346C3DD2F41851A00E88F95"
-            BuildableName = "Brick.app"
-            BlueprintName = "Brick"
-            ReferencedContainer = "container:Brick.xcodeproj">
+            BuildableName = "TouchGrass.app"
+            BlueprintName = "TouchGrass"
+            ReferencedContainer = "container:TouchGrass.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

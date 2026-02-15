@@ -3,7 +3,7 @@ import Combine
 
 struct ContentView: View {
     @EnvironmentObject var screenTimeManager: ScreenTimeManager
-    @EnvironmentObject var brickState: BrickState
+    @EnvironmentObject var appState: TouchGrassState
     @StateObject private var nfcManager = NFCManager.shared
 
     @State private var showAppPicker = false
@@ -11,27 +11,60 @@ struct ContentView: View {
     @State private var showEmergencyConfirm = false
     @State private var programResult: String?
     @State private var emergencyResult: String?
+    @State private var pulseAnimation = false
+
+    // MARK: - Palette
+
+    private let pink = Color(red: 1.0, green: 0.42, blue: 0.62)
+    private let lavender = Color(red: 0.72, green: 0.53, blue: 0.98)
+    private let peach = Color(red: 1.0, green: 0.70, blue: 0.60)
+    private let mint = Color(red: 0.60, green: 0.95, blue: 0.85)
+    private let cream = Color(red: 1.0, green: 0.97, blue: 0.93)
+
+    private var backgroundGradient: LinearGradient {
+        appState.isLocked
+            ? LinearGradient(colors: [lavender.opacity(0.3), pink.opacity(0.2), cream], startPoint: .topLeading, endPoint: .bottomTrailing)
+            : LinearGradient(colors: [mint.opacity(0.3), peach.opacity(0.2), cream], startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 32) {
-                Spacer()
-                statusView
-                if brickState.isLocked, let timestamp = brickState.lockTimestamp {
-                    TimerView(since: timestamp)
+            ZStack {
+                backgroundGradient.ignoresSafeArea()
+
+                VStack(spacing: 28) {
+                    Spacer()
+                    statusView
+                    if appState.isLocked, let timestamp = appState.lockTimestamp {
+                        TimerView(since: timestamp, accentColor: lavender)
+                    }
+                    Spacer()
+                    actionButtons
+                        .padding(.horizontal, 4)
+                    Spacer()
                 }
-                Spacer()
-                actionButtons
-                Spacer()
+                .padding()
             }
-            .padding()
-            .navigationTitle("Brick")
+            .navigationTitle("")
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("TouchGrass")
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(colors: [pink, lavender], startPoint: .leading, endPoint: .trailing)
+                        )
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button("Program NFC Tag") { showProgramSheet = true }
+                        Button {
+                            showProgramSheet = true
+                        } label: {
+                            Label("Program NFC Tag", systemImage: "wave.3.right")
+                        }
                     } label: {
-                        Image(systemName: "gearshape")
+                        Image(systemName: "sparkle")
+                            .font(.title3)
+                            .foregroundStyle(lavender)
                     }
                 }
             }
@@ -39,17 +72,17 @@ struct ContentView: View {
                 AppPickerView()
                     .environmentObject(screenTimeManager)
             }
-            .alert("Program Brick", isPresented: $showProgramSheet) {
-                Button("Start") {
-                    nfcManager.programBrick { success in
+            .alert("Program Tag", isPresented: $showProgramSheet) {
+                Button("Let's go!") {
+                    nfcManager.programTag { success in
                         programResult = success
-                            ? "NFC tag programmed! It's now a Brick."
-                            : "Failed to program tag. Try again."
+                            ? "NFC tag programmed! You're all set."
+                            : "Hmm that didn't work. Try again!"
                     }
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Hold an NFC tag near your iPhone to program it as a Brick.")
+                Text("Hold an NFC tag near your iPhone to program it.")
             }
             .alert("Result", isPresented: .init(
                 get: { programResult != nil },
@@ -59,18 +92,18 @@ struct ContentView: View {
             } message: {
                 Text(programResult ?? "")
             }
-            .alert("Emergency Unbrick", isPresented: $showEmergencyConfirm) {
-                Button("Use Emergency Unbrick", role: .destructive) {
-                    let success = brickState.emergencyUnbrick(using: screenTimeManager)
+            .alert("Emergency Unlock", isPresented: $showEmergencyConfirm) {
+                Button("Use Emergency Unlock", role: .destructive) {
+                    let success = appState.emergencyUnlock(using: screenTimeManager)
                     if !success {
-                        emergencyResult = "No emergency unbricks remaining. You must tap your Brick to unlock."
+                        emergencyResult = "No emergency unlocks left. Go find your tag!"
                     }
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("You have \(brickState.emergencyUnbricksRemaining) emergency unbricks left. This cannot be undone. Are you sure?")
+                Text("You have \(appState.emergencyUnlocksRemaining) emergency unlocks left. This cannot be undone. Are you sure?")
             }
-            .alert("Emergency Unbrick", isPresented: .init(
+            .alert("Emergency Unlock", isPresented: .init(
                 get: { emergencyResult != nil },
                 set: { if !$0 { emergencyResult = nil } }
             )) {
@@ -86,86 +119,173 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Status
+
     private var statusView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: brickState.isLocked ? "lock.fill" : "lock.open.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(brickState.isLocked ? .red : .green)
-                .contentTransition(.symbolEffect(.replace))
+        VStack(spacing: 20) {
+            ZStack {
+                // Glow ring
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                (appState.isLocked ? lavender : mint).opacity(0.4),
+                                .clear
+                            ],
+                            center: .center,
+                            startRadius: 40,
+                            endRadius: 100
+                        )
+                    )
+                    .frame(width: 200, height: 200)
+                    .scaleEffect(pulseAnimation ? 1.08 : 1.0)
+                    .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: pulseAnimation)
 
-            Text(brickState.isLocked ? "Bricked" : "Unbricked")
-                .font(.largeTitle.bold())
+                // Icon circle
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 130, height: 130)
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: appState.isLocked ? [pink, lavender] : [mint, peach],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 3
+                            )
+                    )
+                    .shadow(color: (appState.isLocked ? lavender : mint).opacity(0.3), radius: 20, y: 8)
 
-            Text(brickState.isLocked
-                 ? "Your selected apps are blocked. Tap your Brick to unlock."
-                 : "Tap your Brick to lock down distracting apps.")
-                .font(.subheadline)
+                Image(systemName: appState.isLocked ? "lock.fill" : "lock.open.fill")
+                    .font(.system(size: 48, weight: .medium))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: appState.isLocked ? [pink, lavender] : [mint, Color.green.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .onAppear { pulseAnimation = true }
+
+            Text(appState.isLocked ? "locked in" : "free to scroll")
+                .font(.system(size: 28, weight: .heavy, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: appState.isLocked ? [pink, lavender] : [mint, .green.opacity(0.8)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+
+            Text(appState.isLocked
+                 ? "your apps are blocked rn. tap your tag to unlock!"
+                 : "tap your tag to lock those distracting apps")
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                .padding(.horizontal, 24)
 
-            if brickState.isLocked {
-                Text("\(brickState.emergencyUnbricksRemaining) emergency unbricks remaining")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+            if appState.isLocked {
+                Text("\(appState.emergencyUnlocksRemaining) emergency unlocks left")
+                    .font(.system(.caption, design: .rounded).weight(.medium))
+                    .foregroundStyle(lavender.opacity(0.8))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(lavender.opacity(0.1))
+                    .clipShape(Capsule())
             }
         }
     }
 
+    // MARK: - Buttons
+
     private var actionButtons: some View {
-        VStack(spacing: 16) {
-            if !brickState.isLocked {
+        VStack(spacing: 14) {
+            if !appState.isLocked {
                 Button {
-                    brickState.lock(using: screenTimeManager)
+                    appState.lock(using: screenTimeManager)
                 } label: {
-                    Label("Brick My Phone", systemImage: "lock.fill")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    HStack(spacing: 10) {
+                        Image(systemName: "lock.fill")
+                            .font(.body.weight(.semibold))
+                        Text("touch grass")
+                            .font(.system(.headline, design: .rounded))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        LinearGradient(colors: [pink, lavender], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
+                    .shadow(color: pink.opacity(0.4), radius: 12, y: 6)
                 }
 
                 Button {
                     showAppPicker = true
                 } label: {
-                    Label("Choose Apps to Block", systemImage: "app.badge.checkmark")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color(.systemGray5))
-                        .foregroundStyle(.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    HStack(spacing: 10) {
+                        Image(systemName: "app.badge.checkmark")
+                            .font(.body.weight(.semibold))
+                        Text("choose apps to block")
+                            .font(.system(.headline, design: .rounded))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(.ultraThinMaterial)
+                    .foregroundStyle(.primary)
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(
+                                LinearGradient(colors: [peach.opacity(0.5), lavender.opacity(0.5)], startPoint: .leading, endPoint: .trailing),
+                                lineWidth: 1.5
+                            )
+                    )
                 }
             }
 
-            if brickState.isLocked {
+            if appState.isLocked {
                 Button {
                     showEmergencyConfirm = true
                 } label: {
-                    Label(
-                        "Emergency Unbrick (\(brickState.emergencyUnbricksRemaining) left)",
-                        systemImage: "exclamationmark.triangle"
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .font(.subheadline)
+                        Text("emergency unlock (\(appState.emergencyUnlocksRemaining) left)")
+                            .font(.system(.subheadline, design: .rounded).weight(.medium))
+                    }
+                    .foregroundStyle(appState.emergencyUnlocksRemaining > 0 ? peach : .gray)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 24)
+                    .background(
+                        Capsule()
+                            .fill(appState.emergencyUnlocksRemaining > 0 ? peach.opacity(0.15) : Color.gray.opacity(0.1))
                     )
-                        .font(.subheadline)
-                        .foregroundStyle(brickState.emergencyUnbricksRemaining > 0 ? .orange : .gray)
                 }
-                .disabled(brickState.emergencyUnbricksRemaining <= 0)
+                .disabled(appState.emergencyUnlocksRemaining <= 0)
             }
         }
     }
 }
 
+// MARK: - Timer
+
 struct TimerView: View {
     let since: Date
+    var accentColor: Color = .purple
     @State private var elapsed: TimeInterval = 0
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         Text(formattedTime)
-            .font(.system(size: 48, weight: .light, design: .monospaced))
-            .foregroundStyle(.secondary)
+            .font(.system(size: 44, weight: .light, design: .rounded))
+            .monospacedDigit()
+            .foregroundStyle(accentColor.opacity(0.6))
             .onReceive(timer) { _ in
                 elapsed = Date().timeIntervalSince(since)
             }
@@ -185,5 +305,5 @@ struct TimerView: View {
 #Preview {
     ContentView()
         .environmentObject(ScreenTimeManager.shared)
-        .environmentObject(BrickState.shared)
+        .environmentObject(TouchGrassState.shared)
 }
