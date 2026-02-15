@@ -5,15 +5,15 @@ import UIKit
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private var pink: UIColor {
-        UIColor(red: 1.0, green: 0.42, blue: 0.62, alpha: 1.0)
+        UIColor(red: 0.85, green: 0.45, blue: 0.55, alpha: 1.0)
     }
 
     private var lavender: UIColor {
-        UIColor(red: 0.72, green: 0.53, blue: 0.98, alpha: 1.0)
+        UIColor(red: 0.62, green: 0.52, blue: 0.82, alpha: 1.0)
     }
 
     private var cream: UIColor {
-        UIColor(red: 1.0, green: 0.97, blue: 0.93, alpha: 1.0)
+        UIColor(red: 0.97, green: 0.95, blue: 0.92, alpha: 1.0)
     }
 
     override func configuration(shielding application: Application) -> ShieldConfiguration {

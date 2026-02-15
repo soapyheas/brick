@@ -5,9 +5,9 @@ struct AppPickerView: View {
     @EnvironmentObject var screenTimeManager: ScreenTimeManager
     @Environment(\.dismiss) private var dismiss
 
-    private let pink = Color(red: 1.0, green: 0.42, blue: 0.62)
-    private let lavender = Color(red: 0.72, green: 0.53, blue: 0.98)
-    private let peach = Color(red: 1.0, green: 0.70, blue: 0.60)
+    private let pink = Color(red: 0.85, green: 0.45, blue: 0.55)
+    private let lavender = Color(red: 0.62, green: 0.52, blue: 0.82)
+    private let peach = Color(red: 0.88, green: 0.65, blue: 0.55)
 
     var body: some View {
         NavigationStack {
@@ -24,7 +24,7 @@ struct AppPickerView: View {
                                 LinearGradient(colors: [peach, pink], startPoint: .top, endPoint: .bottom)
                             )
 
-                        Text("one sec babe")
+                        Text("permission needed")
                             .font(.system(.title2, design: .rounded).weight(.heavy))
 
                         Text("TouchGrass needs screen time access to block your apps. tap below to grant permission!")

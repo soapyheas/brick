@@ -13,13 +13,11 @@ struct ContentView: View {
     @State private var emergencyResult: String?
     @State private var pulseAnimation = false
 
-    // MARK: - Palette
-
-    private let pink = Color(red: 1.0, green: 0.42, blue: 0.62)
-    private let lavender = Color(red: 0.72, green: 0.53, blue: 0.98)
-    private let peach = Color(red: 1.0, green: 0.70, blue: 0.60)
-    private let mint = Color(red: 0.60, green: 0.95, blue: 0.85)
-    private let cream = Color(red: 1.0, green: 0.97, blue: 0.93)
+    private let pink = Color(red: 0.85, green: 0.45, blue: 0.55)
+    private let lavender = Color(red: 0.62, green: 0.52, blue: 0.82)
+    private let peach = Color(red: 0.88, green: 0.65, blue: 0.55)
+    private let mint = Color(red: 0.55, green: 0.78, blue: 0.72)
+    private let cream = Color(red: 0.97, green: 0.95, blue: 0.92)
 
     private var backgroundGradient: LinearGradient {
         appState.isLocked
@@ -35,12 +33,18 @@ struct ContentView: View {
                 VStack(spacing: 28) {
                     Spacer()
                     statusView
-                    if appState.isLocked, let timestamp = appState.lockTimestamp {
-                        TimerView(since: timestamp, accentColor: lavender)
+                    Group {
+                        if appState.isLocked, let timestamp = appState.lockTimestamp {
+                            TimerView(since: timestamp, accentColor: lavender)
+                        } else {
+                            Color.clear
+                        }
                     }
+                    .frame(height: 50)
                     Spacer()
                     actionButtons
                         .padding(.horizontal, 4)
+                        .frame(height: 120)
                     Spacer()
                 }
                 .padding()
@@ -119,12 +123,9 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Status
-
     private var statusView: some View {
         VStack(spacing: 20) {
             ZStack {
-                // Glow ring
                 Circle()
                     .fill(
                         RadialGradient(
@@ -141,7 +142,6 @@ struct ContentView: View {
                     .scaleEffect(pulseAnimation ? 1.08 : 1.0)
                     .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: pulseAnimation)
 
-                // Icon circle
                 Circle()
                     .fill(.ultraThinMaterial)
                     .frame(width: 130, height: 130)
@@ -189,19 +189,16 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            if appState.isLocked {
-                Text("\(appState.emergencyUnlocksRemaining) emergency unlocks left")
-                    .font(.system(.caption, design: .rounded).weight(.medium))
-                    .foregroundStyle(lavender.opacity(0.8))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
-                    .background(lavender.opacity(0.1))
-                    .clipShape(Capsule())
-            }
+            Text("\(appState.emergencyUnlocksRemaining) emergency unlocks left")
+                .font(.system(.caption, design: .rounded).weight(.medium))
+                .foregroundStyle(lavender.opacity(0.8))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(lavender.opacity(0.1))
+                .clipShape(Capsule())
+                .opacity(appState.isLocked ? 1 : 0)
         }
     }
-
-    // MARK: - Buttons
 
     private var actionButtons: some View {
         VStack(spacing: 14) {
@@ -272,8 +269,6 @@ struct ContentView: View {
         }
     }
 }
-
-// MARK: - Timer
 
 struct TimerView: View {
     let since: Date
